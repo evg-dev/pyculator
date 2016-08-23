@@ -8,23 +8,79 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (QMessageBox, QAction, qApp, QApplication,
                              QPushButton, QLineEdit, QMainWindow)
 
-number = 0.0
-new_number = 0.0
-total = 0.0
-operator = ''
-new_operator = ''
 
-count = 0  # Count call result
+class Data:
 
-op_count = False  # operators cycle
-res_count = False  # result cycle
-
-opr_signal = False  # Signals operators keypress
-key_signals = False  # Signals numbers keypress
-func_signals = False  #Signal from functions
+    number = 0.0
+    new_number = 0.0
+    total = 0.0
+    operator = ''
+    new_operator = ''
 
 
-class Main(QMainWindow):
+class Signals:
+
+    count = 0  # Count call result
+
+    op_count = False  # operators cycle
+    res_count = False  # result cycle
+
+    opr_signal = False  # Signals operators keypress
+    key_signals = False  # Signals numbers keypress
+    func_signals = False  # Signal from functions
+
+    @staticmethod
+    def op_count_true():
+        Signals.op_count = True
+        return Signals.op_count
+
+    @staticmethod
+    def op_count_false():
+        Signals.op_count = False
+        return Signals.op_count
+
+    @staticmethod
+    def res_count_true():
+        Signals.res_count = True
+        return Signals.res_count
+
+    @staticmethod
+    def res_count_false():
+        Signals.res_count = False
+        return Signals.res_count
+
+    @staticmethod
+    def opr_signal_true():
+        Signals.opr_signal = True
+        return Signals.opr_signal
+
+    @staticmethod
+    def opr_signal_false():
+        Signals.opr_signal = False
+        return Signals.opr_signal
+
+    @staticmethod
+    def key_signals_true():
+        Signals.key_signals = True
+        return Signals.key_signals
+
+    @staticmethod
+    def key_signals_false():
+        Signals.key_signals = False
+        return Signals.key_signals
+
+    @staticmethod
+    def func_signals_true():
+        Signals.func_signals = True
+        return Signals.func_signals
+
+    @staticmethod
+    def func_signals_false():
+        Signals.func_signals = False
+        return Signals.func_signals
+
+
+class GUI(QMainWindow):
 
     def __init__(self):
         super().__init__()
@@ -168,6 +224,7 @@ class Main(QMainWindow):
         self.show()
 
     def closeEvent(self, event):
+
         reply = QMessageBox.question(
             self, 'Quit', "Are you sure to quit?", QMessageBox.Yes |
             QMessageBox.No, QMessageBox.No)
@@ -233,9 +290,13 @@ class Main(QMainWindow):
         if e.key() == Qt.Key_Slash:
             return self.Operators('/')
 
+
+class Main(Data, Signals, GUI):
+
+    def __init__(self):
+        super().__init__()
+
     def Nums(self, n):
-        global opr_signal
-        global key_signals
 
         sender = self.sender()
 
@@ -247,14 +308,14 @@ class Main(QMainWindow):
         else:
             num = sender.text()
 
-        if not opr_signal:
+        if not Signals.opr_signal:
             self.line.setText(self.line.text() + num)
         else:
             self.line.setText(num)
-            opr_signal = False
-            op_count = False
+            Signals.opr_signal_false()
+            Signals.op_count_false()
 
-        key_signals = True
+        Signals.key_signals_true()
 
     def Point(self):
         if "." not in self.line.text():
@@ -266,169 +327,121 @@ class Main(QMainWindow):
         self.line.setText(str(num))
 
     def Opr(self):
-        global new_number
-        global total
-        global operator
-        global number
 
-        if operator == "+":
-            total = Decimal(number) + Decimal(new_number)
+        if Data.operator == "+":
+            Data.total = Decimal(Data.number) + Decimal(Data.new_number)
 
-        if operator == "-":
-            total = Decimal(number) - Decimal(new_number)
+        if Data.operator == "-":
+            Data.total = Decimal(Data.number) - Decimal(Data.new_number)
 
-        if operator == "*":
-            total = Decimal(number) * Decimal(new_number)
+        if Data.operator == "*":
+            Data.total = Decimal(Data.number) * Decimal(Data.new_number)
 
-        if operator == "/":
+        if Data.operator == "/":
             try:
-                total = Decimal(number) / Decimal(new_number)
+                Data.total = Decimal(Data.number) / Decimal(Data.new_number)
             except Exception:
-                total = '0'
+                Data.total = '0'
 
     def Operators(self, o):
-        global number
-        global total
-        global operator
-        global new_operator
-        global new_number
-
-        global count
-
-        global op_count
-        global res_count
-
-        global key_signals
-        global opr_signal
 
         sender = self.sender()
 
-        if op_count:
+        if Signals.op_count:
 
-            new_number = self.line.text()
+            Data.new_number = self.line.text()
 
             if o:
-                new_operator = o
+                Data.new_operator = o
             else:
-                new_operator = sender.text()
+                Data.new_operator = sender.text()
 
-            if (not opr_signal):
+            if (not Signals.opr_signal):
                 self.Opr()
-                self.line.setText(str(total))
-                number = total
+                self.line.setText(str(Data.total))
+                Data.number = Data.total
 
-            operator = new_operator
+            Data.operator = Data.new_operator
         else:
             if o:
-                operator = o
+                Data.operator = o
             else:
-                operator = sender.text()
+                Data.operator = sender.text()
 
-            number = self.line.text()
-            op_count = True
+            Data.number = self.line.text()
+            Signals.op_count_true()
 
-        opr_signal = True
-        key_signals = False
-        res_count = False
-        count = 0
+        Signals.opr_signal_true()
+        Signals.key_signals_false()
+        Signals.res_count_false()
+        Signals.count = 0
 
     def Result(self):
-        global number
-        global new_number
-        global total
-        global operator
-        global new_number
 
-        global count
+        if Data.operator:
 
-        global op_count
-        global res_count
+            if (not Signals.res_count):
+                Data.new_number = self.line.text()
 
-        global opr_signal
-        global key_signals
-        global func_signals
+            if Signals.func_signals:
+                Data.number = self.line.text()
 
-        if operator:
-
-            if (not res_count):
-                new_number = self.line.text()
-
-            if func_signals:
-                number = self.line.text()
-
-            if (key_signals & (count > 1)):
-                number = self.line.text()
+            if (Signals.key_signals & (Signals.count > 1)):
+                Data.number = self.line.text()
 
             self.Opr()
-            self.line.setText(str(total))
-            number = total
-            res_count = True
-            count += 1
+            self.line.setText(str(Data.total))
+            Data.number = Data.total
+            Signals.res_count_true()
+            Signals.count += 1
 
-        opr_signal = True
-        key_signals = False
-        func_signals = False
+        Signals.opr_signal_true()
+        Signals.key_signals_false()
+        Signals.func_signals_false()
 
     def Sqrt(self):
-        global func_signals
-
         num = Decimal(self.line.text())
         try:
             num = sqrt(num)
         except Exception:
             num = '0'
         self.line.setText(str(num))
-        func_signals = True
+        Signals.func_signals_true()
 
     def Squared(self):
-        global func_signals
-
         num = Decimal(self.line.text())
         num **= 2
         self.line.setText(str(num))
 
-        func_signals = True
+        Signals.func_signals_true()
 
     def C(self):
-        global number
-        global new_number
-        global total
-        global operator
-        global new_operator
 
-        global op_count
-        global res_count
+        Data.number = 0
+        Data.new_number = 0
+        Data.total = 0
+        Data.operator = ''
+        Data.new_operator = ''
 
-        global opr_signal
-        global key_signals
-        global func_signals
+        Signals.opr_signal_false()
+        Signals.key_signals_false()
+        Signals.op_count_false()
+        Signals.res_count_false()
+        Signals.func_signals_false()
 
-        number = 0
-        new_number = 0
-        total = 0
-
-        opr_signal = False
-        key_signals = False
-        op_count = False
-        res_count = False
-        func_signals = False
-        operator = ''
-        new_operator = ''
         self.line.setText('0')
 
     def CE(self):
         self.line.setText('0')
 
     def Back(self):
-        global func_signals
-
         # Bug. Not work from keyboard before GUI first!
         num = self.line.text()[:-1]
         if len(num) == 0:
             num = '0'
         self.line.setText(num)
 
-        func_signals = True
+        Signals.func_signals_true()
 
 
 if __name__ == '__main__':
