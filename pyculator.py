@@ -25,9 +25,10 @@ class Signals:
     op_count = False  # operators cycle
     res_count = False  # result cycle
 
-    opr_signal = False  # Signals operators keypress
+    opr_signal = False  # Signals operators & result keypress
     key_signals = False  # Signals numbers keypress
     func_signals = False  # Signal from functions
+    first_opr = False  # Signal first using operators, reset by C
 
     @staticmethod
     def op_count_true():
@@ -78,6 +79,16 @@ class Signals:
     def func_signals_false():
         Signals.func_signals = False
         return Signals.func_signals
+
+    @staticmethod
+    def first_opr_true():
+        Signals.first_opr = True
+        return Signals.first_opr
+
+    @staticmethod
+    def first_opr_false():
+        Signals.first_opr = False
+        return Signals.first_opr
 
 
 class GUI(QMainWindow):
@@ -221,6 +232,7 @@ class GUI(QMainWindow):
             i.clicked.connect(self.Operators)
 
         self.setWindowTitle('Pyculator')
+        self.setFocus()
         self.show()
 
     def closeEvent(self, event):
@@ -308,6 +320,8 @@ class Main(Data, Signals, GUI):
         else:
             num = sender.text()
 
+        '''Add new number if operators not used'''
+
         if not Signals.opr_signal:
             self.line.setText(self.line.text() + num)
         else:
@@ -347,7 +361,7 @@ class Main(Data, Signals, GUI):
 
         sender = self.sender()
 
-        if Signals.op_count:
+        if Signals.op_count or Signals.first_opr:
 
             Data.new_number = self.line.text()
 
@@ -367,13 +381,14 @@ class Main(Data, Signals, GUI):
                 Data.operator = o
             else:
                 Data.operator = sender.text()
-
+            
             Data.number = self.line.text()
             Signals.op_count_true()
 
         Signals.opr_signal_true()
         Signals.key_signals_false()
         Signals.res_count_false()
+        Signals.first_opr_true()
         Signals.count = 0
 
     def Result(self):
@@ -415,6 +430,8 @@ class Main(Data, Signals, GUI):
 
         Signals.func_signals_true()
 
+    '''Reset all signals and data'''
+
     def C(self):
 
         Data.number = 0
@@ -428,6 +445,7 @@ class Main(Data, Signals, GUI):
         Signals.op_count_false()
         Signals.res_count_false()
         Signals.func_signals_false()
+        Signals.first_opr_false()
 
         self.line.setText('0')
 
@@ -435,7 +453,6 @@ class Main(Data, Signals, GUI):
         self.line.setText('0')
 
     def Back(self):
-        # Bug. Not work from keyboard before GUI first!
         num = self.line.text()[:-1]
         if len(num) == 0:
             num = '0'
