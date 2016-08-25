@@ -27,7 +27,6 @@ class Signals:
 
     opr_signal = False  # Signals operators & result keypress
     key_signals = False  # Signals numbers keypress
-    func_signals = False  # Signal from functions
     first_opr = False  # Signal first using operators, reset by C
 
     @staticmethod
@@ -69,16 +68,6 @@ class Signals:
     def key_signals_false():
         Signals.key_signals = False
         return Signals.key_signals
-
-    @staticmethod
-    def func_signals_true():
-        Signals.func_signals = True
-        return Signals.func_signals
-
-    @staticmethod
-    def func_signals_false():
-        Signals.func_signals = False
-        return Signals.func_signals
 
     @staticmethod
     def first_opr_true():
@@ -381,7 +370,7 @@ class Main(Data, Signals, GUI):
                 Data.operator = o
             else:
                 Data.operator = sender.text()
-            
+
             Data.number = self.line.text()
             Signals.op_count_true()
 
@@ -398,9 +387,6 @@ class Main(Data, Signals, GUI):
             if (not Signals.res_count):
                 Data.new_number = self.line.text()
 
-            if Signals.func_signals:
-                Data.number = self.line.text()
-
             if (Signals.key_signals & (Signals.count > 1)):
                 Data.number = self.line.text()
 
@@ -412,7 +398,6 @@ class Main(Data, Signals, GUI):
 
         Signals.opr_signal_true()
         Signals.key_signals_false()
-        Signals.func_signals_false()
 
     def Sqrt(self):
         num = Decimal(self.line.text())
@@ -421,14 +406,15 @@ class Main(Data, Signals, GUI):
         except Exception:
             num = '0'
         self.line.setText(str(num))
-        Signals.func_signals_true()
+
+        Signals.key_signals_true()
 
     def Squared(self):
         num = Decimal(self.line.text())
         num **= 2
         self.line.setText(str(num))
 
-        Signals.func_signals_true()
+        Signals.key_signals_true()
 
     '''Reset all signals and data'''
 
@@ -444,7 +430,6 @@ class Main(Data, Signals, GUI):
         Signals.key_signals_false()
         Signals.op_count_false()
         Signals.res_count_false()
-        Signals.func_signals_false()
         Signals.first_opr_false()
 
         self.line.setText('0')
@@ -458,7 +443,7 @@ class Main(Data, Signals, GUI):
             num = '0'
         self.line.setText(num)
 
-        Signals.func_signals_true()
+        Signals.key_signals_true()
 
 
 if __name__ == '__main__':
